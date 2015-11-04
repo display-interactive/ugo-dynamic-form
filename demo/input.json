@@ -1,4 +1,11 @@
 {
-    "capacity": "20ml",
-    "mandatories": ["capacity"]
+    "capacity_milliliter": "20",
+    "test": "test2",
+    "config": {
+        "capacity_milliliter": {"type": "number", "mandatory": true,  "label": "Capacité (Mililitres)"},
+        "test": {"type": "text", "mandatory": false, "label": "Test"},
+        "url": {"type": "text", "mandatory": true, "label": "Adresse Web"},
+        "test3": {"type": "checkbox", "mandatory": false, "label": "Test 3"}
+    }
+
 }

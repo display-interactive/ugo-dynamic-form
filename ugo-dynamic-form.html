@@ -1,0 +1,277 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="ugo-dynamic-form">
+    <template>
+        <template id="fieldsContainer" is="dom-repeat" items="{{fields}}" index-as="id">
+            <div class$="[[ item.classes.container ]]">
+                <label for$="[[item.id]]" class$="[[ item.classes.label ]]">[[item.label]]</label>
+                <div class$="[[ item.classes.inputContainer ]]">
+                    <input type$="[[item.type]]" class$="[[ item.classes.input ]]" id$="[[item.id]]" value="{{item.value}}" />
+                    <span class="input-group-btn">
+                        <button type="button" on-tap="removeField" class$="[[ item.classes.button ]]">{{ item.texts.remove }}</button>
+                    </span>
+                </div>
+            </div>
+        </template>
+        <select id="field">
+            <template id="selectOption" is="dom-repeat" items="{{selectOptions}}" as="option" index-as="id">
+                <option value="[[option.value]]">[[option.label]]</option>
+            </template>
+        </select>
+        <button type="button" on-tap="addField">{{addFieldText}}</button>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: 'ugo-dynamic-form',
+
+        properties: {
+            /**
+             * Required
+             */
+            selector: {
+                type: String
+            },
+
+            /**
+             * Required
+             */
+            containerClass: {
+                type: String,
+                value: 'form-group'
+            },
+
+            /**
+             * Required
+             */
+            labelClass: {
+                type: String,
+                value: 'col-md-2 control-label'
+            },
+
+            /**
+             * Required
+             */
+            inputContainerClass: {
+                type: String,
+                value: 'col-md-10 input-group'
+            },
+
+            /**
+             * Required
+             */
+            inputClass: {
+                type: String,
+                value: 'form-control'
+            },
+
+            /**
+             * Required
+             */
+            buttonClass: {
+                type: String,
+                value: 'btn btn-default'
+            },
+
+            /**
+             * Required
+             */
+            addFieldText: {
+                type: String,
+                value: '+'
+            },
+
+            /**
+             * Required
+             */
+            removeFieldText: {
+                type: String,
+                value: '-'
+            },
+
+            /**
+             * Internal
+             */
+            fields: {
+                type: Array,
+                value: [],
+                readOnly: true
+            },
+
+            /**
+             * Internal
+             */
+            selectOptions: {
+                type: Array,
+                value: [],
+                readOnly: true
+            },
+
+            /**
+             * Internal
+             */
+            data: {
+                type: Object,
+                value: {}
+            }
+        },
+
+        /*listeners: {
+            'tap': 'removeItem'
+        },*/
+
+        /**
+         *
+         */
+        ready: function() {
+            this.element = document.querySelector(this.selector);
+            this.data = JSON.parse(this.element.value);
+
+
+            this._buildFields();
+            /*setTimeout(function () {
+                this.fetchValues();
+            }.bind(this), 1000)*/
+        },
+
+        removeField: function(event) {
+
+        },
+
+
+        addField: function() {
+
+        },
+
+        fetchValues: function() {
+            var children = Polymer.dom(this.root).querySelectorAll('.'+this.formContainerClass);
+            [].forEach.call(children, function() {
+
+            });
+        },
+
+        /**
+         * Build fields array
+         */
+        _buildFields: function () {
+            var key,
+                fields = [];
+
+            for (key in this.data) {
+                if (this.data.hasOwnProperty(key) && key !== 'config') {
+                    fields.push({
+                        id: 'field_'+key,
+                        name: key,
+                        label: this._getConfig('label', key),
+                        value: this.data[key],
+                        classes: this._getClasses(),
+                        texts: this._getTexts(),
+                        type: this._getConfig('type', key),
+                        mandatory: this._getConfig('mandatory', key)
+                    });
+                }
+            }
+            this._setFields(fields);
+            this._buildSelectOptions();
+        },
+
+        /**
+         * build select options
+         */
+        _buildSelectOptions: function() {
+            var options = [], key;
+            if (this.data.config != undefined) {
+                for (key in this.data.config) {
+                    if (this.data.config.hasOwnProperty(key) && !this._inField(key)) {
+                        options.push({
+                            value: key,
+                            label: this._getConfig('label', key)
+                        })
+                    }
+                }
+            }
+
+            this._setSelectOptions(options);
+        },
+
+        /**
+         * Get config
+         * @param {String} type
+         * @param {String} key
+         * @private
+         */
+        _getConfig: function(type, key) {
+            if (
+                this.data.config != undefined
+                && this.data.config[key] != undefined
+                && this.data.config[key][type] != undefined
+            ) {
+                return this.data.config[key][type];
+            }
+
+            var defaultValue = null;
+            switch (type) {
+                case 'type':
+                    defaultValue = 'text';
+                    break;
+                case 'mandatory': //if not config specified then it's mandatory
+                    defaultValue = true;
+                    break;
+                case 'label':
+                    defaultValue = key;
+                    break;
+            }
+
+            return defaultValue;
+        },
+
+        /**
+         * Get classes for markup
+         * @private
+         */
+        _getClasses: function() {
+            return {
+                container: this.containerClass,
+                label: this.labelClass,
+                inputContainer: this.inputContainerClass,
+                input: this.inputClass,
+                button: this.buttonClass
+            };
+        },
+
+        /**
+         * Get texts for markup
+         * @private
+         */
+        _getTexts: function() {
+            return {
+                remove: this.removeFieldText
+            };
+        },
+
+        /**
+         * @param {String} key
+         * @return {Boolean}
+         */
+        _inField: function(key) {
+            var i;
+            /** @var {Array} this.fields */
+            for (i in this.fields) {
+                if (this.fields.hasOwnProperty(i) && this.fields[i].name === key) {
+                    return true;
+                }
+            }
+
+            return false;
+        },
+
+        /**
+         * @param id
+         * @param optionName
+         * @returns {boolean}
+         */
+        isSelected: function(id, optionName) {
+            return id === optionName;
+        }
+    });
+</script>

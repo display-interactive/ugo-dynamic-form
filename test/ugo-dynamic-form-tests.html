@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>resumer-element</title>
+
+    <!-- Import dependencies -->
+    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../symfony-collection.html">
+</head>
+
+<body>
+
+<symfony-collection id="typical" data-prototype="<div symfony-collection-item id=&quot;index___name_____name__&quot;>image<br/><button type=&quot;button&quot; symfony-collection-remove>remove</button></div>">
+    <div symfony-collection-item id="index_0___name__">image<br/><button type="button" symfony-collection-remove>remove</button></div>
+    <div symfony-collection-item id="index_1___name__">image<br/><button type="button" symfony-collection-remove>remove</button></div>
+    <div symfony-collection-item id="index_2___name__">image<br/><button type="button" symfony-collection-remove>remove</button></div>
+    <div>pol</div>
+</symfony-collection>
+
+<script>
+    suite('<symfony-collection>', function() {
+        var el = document.getElementById('typical');
+
+        test('exists', function() {
+            assert.isNotNull(el);
+        });
+
+        test('fetch items', function() {
+            assert.equal(document.querySelectorAll('[symfony-collection-item]').length, el.items.length);
+        });
+
+        test('add item', function() {
+            el.addItem();
+            assert.equal(4, el.items.length);
+        });
+
+        test('remove item', function() {
+            el.removeItem({
+                preventDefault: function() {},
+                target: document.querySelector('button[symfony-collection-remove]')
+            });
+            assert.equal(3, el.items.length);
+        });
+    });
+</script>
+
+</body>
+</html>

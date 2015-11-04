@@ -1,0 +1,24 @@
+{
+    "name": "ugo-dynamic-form",
+    "version": "0.2",
+    "authors": [
+        "Florian Roy"
+    ],
+    "description": "Polymer Element to handle dynamic form",
+    "main": "element/*",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "keywords": ["Polymer", "web-components", "form", "dynmaic"],
+    "dependencies": {
+        "polymer": "Polymer/polymer#1.2.*"
+    },
+    "devDependencies": {
+        "web-component-tester": "*",
+        "bootstrap": "3.3.5"
+    }
+}

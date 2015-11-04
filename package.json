@@ -1,0 +1,14 @@
+{
+    "author": {
+        "name": "Florian Roy"
+    },
+    "description": "Polymer Element to handle symfony collection",
+    "devDependencies": {
+        "web-component-tester": "3.*"
+    },
+    "name": "ugo-dynamic-form",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/display-interactive/ugo-dynamic-form.git"
+    }
+}

@@ -26,10 +26,14 @@
             assert.isNotNull(el);
         });
 
-        test('has fields', function() {
+        test('buildField', function() {
             var elements = Polymer.dom(el.root).querySelectorAll('input');
             //console.log(elements);
             assert.equal(3, elements.length);
+        });
+
+        test('buildOptions', function() {
+            
         });
 
         test('remove field', function(done) {

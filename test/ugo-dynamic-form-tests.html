@@ -3,49 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <title>resumer-element</title>
+    <title>ugo dynamic form</title>
 
     <!-- Import dependencies -->
     <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
 
     <link rel="import" href="../../polymer/polymer.html">
-    <link rel="import" href="../symfony-collection.html">
+    <link rel="import" href="../ugo-dynamic-form.html">
 </head>
 
 <body>
 
-<symfony-collection id="typical" data-prototype="<div symfony-collection-item id=&quot;index___name_____name__&quot;>image<br/><button type=&quot;button&quot; symfony-collection-remove>remove</button></div>">
-    <div symfony-collection-item id="index_0___name__">image<br/><button type="button" symfony-collection-remove>remove</button></div>
-    <div symfony-collection-item id="index_1___name__">image<br/><button type="button" symfony-collection-remove>remove</button></div>
-    <div symfony-collection-item id="index_2___name__">image<br/><button type="button" symfony-collection-remove>remove</button></div>
-    <div>pol</div>
-</symfony-collection>
+<input type="text" id="reference" class="form-control" value="{&quot;url&quot;:&quot;http://www.google.fr&quot;,&quot;test&quot;:&quot;&quot;,&quot;config&quot;:{&quot;capacity_milliliter&quot;:{&quot;type&quot;:&quot;number&quot;,&quot;mandatory&quot;:true,&quot;label&quot;:&quot;Capacité (Mililitres)&quot;},&quot;test&quot;:{&quot;type&quot;:&quot;text&quot;,&quot;mandatory&quot;:false,&quot;label&quot;:&quot;Test&quot;},&quot;url&quot;:{&quot;type&quot;:&quot;text&quot;,&quot;mandatory&quot;:true,&quot;label&quot;:&quot;Adresse Web&quot;},&quot;test3&quot;:{&quot;type&quot;:&quot;checkbox&quot;,&quot;mandatory&quot;:false,&quot;label&quot;:&quot;Test 3&quot;}}}" />
+
+<ugo-dynamic-form id="webcompo" selector="#reference"></ugo-dynamic-form>
 
 <script>
-    suite('<symfony-collection>', function() {
-        var el = document.getElementById('typical');
-
+    suite('<ugo-dynamic-form>', function() {
+        var el = document.getElementById('webcompo');
         test('exists', function() {
             assert.isNotNull(el);
         });
 
-        test('fetch items', function() {
-            assert.equal(document.querySelectorAll('[symfony-collection-item]').length, el.items.length);
+        test('has fields', function() {
+            var elements = Polymer.dom(el.root).querySelectorAll('input');
+            //console.log(elements);
+            assert.equal(3, elements.length);
         });
 
-        test('add item', function() {
-            el.addItem();
-            assert.equal(4, el.items.length);
+        test('remove field', function(done) {
+            var button = Polymer.dom(el.root).querySelector('button[data-id=test]');
+            el.removeField({target: button});
+            setTimeout(function() {
+                var elements = Polymer.dom(el.root).querySelectorAll('input');
+                //console.log(elements);
+                assert.equal(2, elements.length);
+            }, 50);
+
+            var newButton = button.cloneNode(true);
+            newButton.setAttribute('data-id', 'capacity_milliliter');
+            el.removeField({target: newButton});
+            setTimeout(function() {
+                var elements = Polymer.dom(el.root).querySelectorAll('input');
+                //console.log(elements);
+                assert.equal(2, elements.length);
+                done();
+            }, 50);
         });
 
-        test('remove item', function() {
-            el.removeItem({
-                preventDefault: function() {},
-                target: document.querySelector('button[symfony-collection-remove]')
-            });
-            assert.equal(3, el.items.length);
+        test('add field', function() {
+
         });
+
+
     });
 </script>
 

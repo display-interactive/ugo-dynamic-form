@@ -1,24 +1,30 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../chosen-decorator/chosen-decorator.html">
 
 <dom-module id="ugo-dynamic-form">
     <template>
-        <template id="fieldsContainer" is="dom-repeat" items="{{fields}}" index-as="id">
-            <div class$="[[ item.classes.container ]]">
-                <label for$="[[item.id]]" class$="[[ item.classes.label ]]">[[item.label]]</label>
-                <div class$="[[ item.classes.inputContainer ]]">
-                    <input type$="[[item.type]]" class$="[[ item.classes.input ]]" id$="[[item.id]]" value="{{item.value}}" />
-                    <span class="input-group-btn">
-                        <button type="button" on-tap="removeField" class$="[[ item.classes.button ]]">{{ item.texts.remove }}</button>
-                    </span>
+        <template id="fieldsContainer" is="dom-repeat" items="{{ fields }}" index-as="id">
+            <div class$="[[ classes.container ]]">
+                <label for$="[[ item.name ]]" class$="[[ classes.label ]]">[[item.label]]</label>
+                <div class$="[[ classes.inputContainer ]]">
+                    <input type$="[[ item.type ]]" class$="[[ classes.input ]]" id$="[[ item.name ]]" value="{{ item.value }}" />
+
+                    <template is="dom-if" if="{{ !item.mandatory }}">
+                        <span class$="[[ classes.removeContainer ]]">
+                            <button type="button" data-id$="[[ item.name ]]" on-tap="removeField" class$="[[ classes.remove ]]">{{ texts.remove }}</button>
+                        </span>
+                    </template>
                 </div>
             </div>
         </template>
-        <select id="field">
-            <template id="selectOption" is="dom-repeat" items="{{selectOptions}}" as="option" index-as="id">
-                <option value="[[option.value]]">[[option.label]]</option>
-            </template>
-        </select>
-        <button type="button" on-tap="addField">{{addFieldText}}</button>
+        <chosen-decorator width="200">
+            <select id="fieldType">
+                <template id="selectOption" is="dom-repeat" items="{{selectOptions}}" as="option" index-as="id">
+                    <option value="[[option.value]]">[[option.label]]</option>
+                </template>
+            </select>
+        </chosen-decorator>
+        <button type="button" class$="[[ classes.add ]]" on-tap="addField">{{texts.add}}</button>
     </template>
 </dom-module>
 <script>
@@ -33,60 +39,24 @@
                 type: String
             },
 
-            /**
-             * Required
-             */
-            containerClass: {
-                type: String,
-                value: 'form-group'
+            classes: {
+                type: Object,
+                value: {
+                    container: 'form-group',
+                    label: 'col-md-2 control-label',
+                    inputContainer: 'col-md-10',
+                    input: 'form-control',
+                    remove: 'btn btn-default btn-danger',
+                    add: 'btn btn-default btn-success'
+                }
             },
 
-            /**
-             * Required
-             */
-            labelClass: {
-                type: String,
-                value: 'col-md-2 control-label'
-            },
-
-            /**
-             * Required
-             */
-            inputContainerClass: {
-                type: String,
-                value: 'col-md-10 input-group'
-            },
-
-            /**
-             * Required
-             */
-            inputClass: {
-                type: String,
-                value: 'form-control'
-            },
-
-            /**
-             * Required
-             */
-            buttonClass: {
-                type: String,
-                value: 'btn btn-default'
-            },
-
-            /**
-             * Required
-             */
-            addFieldText: {
-                type: String,
-                value: '+'
-            },
-
-            /**
-             * Required
-             */
-            removeFieldText: {
-                type: String,
-                value: '-'
+            texts: {
+                type: Object,
+                value: {
+                    add: '+',
+                    remove: '-'
+                }
             },
 
             /**
@@ -116,9 +86,11 @@
             }
         },
 
-        /*listeners: {
-            'tap': 'removeItem'
-        },*/
+        listeners: {
+            'dom-change': 'fetchData',
+            'change': 'fetchData',
+            'keyup': 'fetchData'
+        },
 
         /**
          *
@@ -127,56 +99,111 @@
             this.element = document.querySelector(this.selector);
             this.data = JSON.parse(this.element.value);
 
-
             this._buildFields();
-            /*setTimeout(function () {
-                this.fetchValues();
-            }.bind(this), 1000)*/
-        },
-
-        removeField: function(event) {
-
-        },
-
-
-        addField: function() {
-
-        },
-
-        fetchValues: function() {
-            var children = Polymer.dom(this.root).querySelectorAll('.'+this.formContainerClass);
-            [].forEach.call(children, function() {
-
-            });
         },
 
         /**
-         * Build fields array
+         * Remove a field from the form
+         */
+        removeField: function(event) {
+            var id = event.target.getAttribute('data-id');
+
+            for(var index = 0; index < this.fields.length; index++) {
+                if (this.fields[index].name == id && !this.fields[index].mandatory) {
+                    this.splice('fields', index, 1);
+                    break;
+                }
+            }
+
+            this._buildSelectOptions();
+        },
+
+
+        /**
+         * Add a field to the form
+         */
+        addField: function() {
+            var key = this.$.fieldType.value;
+
+            var newField = {
+                name: key,
+                label: this._getConfig('label', key),
+                value: null,
+                type: this._getConfig('type', key),
+                mandatory: this._getConfig('mandatory', key)
+            };
+
+            this.push('fields', newField);
+            this._buildSelectOptions();
+        },
+
+        /**
+         * Fetch Data from the displayed fields
+         */
+        fetchData: function() {
+            var children = Polymer.dom(this.root).querySelectorAll('.'+this.classes.container);
+
+            var data = {};
+            [].forEach.call(children, function(element) {
+                var field = Polymer.dom(element).querySelector('input');
+                data[field.id] = field.value;
+            });
+
+            data.config = this.data.config;
+
+            this.element.value = JSON.stringify(data);
+        },
+
+        /**
+         * Build fields array for template
          */
         _buildFields: function () {
             var key,
-                fields = [];
+                fields = [],
+                rendered = [];
 
+            //display preset data
             for (key in this.data) {
                 if (this.data.hasOwnProperty(key) && key !== 'config') {
+                    rendered.push(key);
                     fields.push({
-                        id: 'field_'+key,
                         name: key,
                         label: this._getConfig('label', key),
                         value: this.data[key],
-                        classes: this._getClasses(),
-                        texts: this._getTexts(),
                         type: this._getConfig('type', key),
                         mandatory: this._getConfig('mandatory', key)
                     });
                 }
             }
+
+            //display mandatory field with no preset data
+            if (this.data.config != undefined) {
+                for (key in this.data.config) {
+                    if  (
+                        this.data.config.hasOwnProperty(key)
+                        && this.data.config[key].mandatory
+                        && rendered.indexOf(key) == -1
+                    ) {
+                        rendered.push(key);
+                        fields.push({
+                            name: key,
+                            label: this._getConfig('label', key),
+                            value: "",
+                            type: this._getConfig('type', key),
+                            mandatory: true
+                        })
+                    }
+                }
+            }
+
             this._setFields(fields);
             this._buildSelectOptions();
         },
 
         /**
          * build select options
+         *
+         * depends from fields
          */
         _buildSelectOptions: function() {
             var options = [], key;
@@ -214,8 +241,8 @@
                 case 'type':
                     defaultValue = 'text';
                     break;
-                case 'mandatory': //if not config specified then it's mandatory
-                    defaultValue = true;
+                case 'mandatory': //if not config specified then it's not mandatory
+                    defaultValue = false;
                     break;
                 case 'label':
                     defaultValue = key;
@@ -226,52 +253,19 @@
         },
 
         /**
-         * Get classes for markup
-         * @private
-         */
-        _getClasses: function() {
-            return {
-                container: this.containerClass,
-                label: this.labelClass,
-                inputContainer: this.inputContainerClass,
-                input: this.inputClass,
-                button: this.buttonClass
-            };
-        },
-
-        /**
-         * Get texts for markup
-         * @private
-         */
-        _getTexts: function() {
-            return {
-                remove: this.removeFieldText
-            };
-        },
-
-        /**
-         * @param {String} key
+         * @param {String} name
          * @return {Boolean}
          */
-        _inField: function(key) {
-            var i;
+        _inField: function(name) {
+            var key;
             /** @var {Array} this.fields */
-            for (i in this.fields) {
-                if (this.fields.hasOwnProperty(i) && this.fields[i].name === key) {
+            for (key in this.fields) {
+                if (this.fields.hasOwnProperty(key) && this.fields[key].name === name) {
                     return true;
                 }
             }
 
             return false;
-        },
-
-        /**
-         * @param id
-         * @param optionName
-         * @returns {boolean}
-         */
-        isSelected: function(id, optionName) {
-            return id === optionName;
         }
     });
 </script>

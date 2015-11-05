@@ -7,5 +7,4 @@
         "url": {"type": "text", "mandatory": true, "label": "Adresse Web"},
         "test3": {"type": "checkbox", "mandatory": false, "label": "Test 3"}
     }
-
 }

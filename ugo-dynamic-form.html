@@ -291,7 +291,7 @@
                     defaultValue = 'text';
                     break;
                 case 'mandatory': //if not config specified then it's not mandatory
-                    defaultValue = false;
+                    defaultValue = this.data.config == undefined;
                     break;
                 case 'label':
                     defaultValue = key;

@@ -16,9 +16,9 @@
 
 <body>
 
-<input type="text" id="reference" style="width: 100%; display: block" value="{&quot;url&quot;:&quot;http://www.google.fr&quot;,&quot;test&quot;:&quot;&quot;,&quot;config&quot;:{&quot;capacity_milliliter&quot;:{&quot;type&quot;:&quot;number&quot;,&quot;mandatory&quot;:true,&quot;label&quot;:&quot;Capacité (Mililitres)&quot;},&quot;test&quot;:{&quot;type&quot;:&quot;text&quot;,&quot;mandatory&quot;:false,&quot;label&quot;:&quot;Test&quot;},&quot;url&quot;:{&quot;type&quot;:&quot;text&quot;,&quot;mandatory&quot;:true,&quot;label&quot;:&quot;Adresse Web&quot;},&quot;test3&quot;:{&quot;type&quot;:&quot;checkbox&quot;,&quot;mandatory&quot;:false,&quot;label&quot;:&quot;Test 3&quot;}}}" />
+<input type="text" id="reference" style="width: 100%; display: block" value="{&quot;url&quot;:&quot;http://www.google.fr&quot;,&quot;test&quot;:&quot;&quot;}" />
 
-<ugo-dynamic-form id="webcompo" selector="#reference"></ugo-dynamic-form>
+<ugo-dynamic-form id="webcompo" selector="#reference" config='{"capacity_milliliter":{"type":"number","mandatory":true,"label":"Capacité (Mililitres)"},"test":{"type":"text","mandatory":false,"label":"Test"},"url":{"type":"text","mandatory":true,"label":"Adresse Web"},"test3":{"type":"checkbox","mandatory":false,"label":"Test 3"}}'></ugo-dynamic-form>
 
 <br/><br/><br/><br/><br/>
 
@@ -34,14 +34,13 @@
 
         test('buildField', function() {
             var elements = Polymer.dom(el.root).querySelectorAll('input');
-            //console.log(elements);
             assert.equal(3, elements.length);
             assert.equal(3, el.fields.length);
         });
 
         test('buildOptions', function() {
-            assert.equal(4, Object.keys(el.data.config).length);
-            assert.equal(el.selectOptions.length, Object.keys(el.data.config).length - el.fields.length);
+            assert.equal(4, Object.keys(el.config).length);
+            assert.equal(el.selectOptions.length, Object.keys(el.config).length - el.fields.length);
         });
 
         test('remove field', function(done) {

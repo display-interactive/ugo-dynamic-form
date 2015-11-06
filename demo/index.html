@@ -20,14 +20,14 @@
 
         <div class="row">
             <div class="form-group">
-            <input type="text" id="reference" class="form-control" value="{&quot;capacity_milliliter&quot;:&quot;20&quot;,&quot;url&quot;:&quot;http://www.google.fr&quot;,&quot;test&quot;:&quot;&quot;,&quot;test3&quot;:&quot;&quot;,&quot;config&quot;:{&quot;capacity_milliliter&quot;:{&quot;type&quot;:&quot;number&quot;,&quot;mandatory&quot;:true,&quot;label&quot;:&quot;Capacité (Mililitres)&quot;},&quot;test&quot;:{&quot;type&quot;:&quot;text&quot;,&quot;mandatory&quot;:false,&quot;label&quot;:&quot;Test&quot;},&quot;url&quot;:{&quot;type&quot;:&quot;text&quot;,&quot;mandatory&quot;:true,&quot;label&quot;:&quot;Adresse Web&quot;},&quot;test3&quot;:{&quot;type&quot;:&quot;checkbox&quot;,&quot;mandatory&quot;:false,&quot;label&quot;:&quot;Test 3&quot;}}}" />
+            <input type="text" id="reference" class="form-control" value="{&quot;capacity_milliliter&quot;:&quot;20&quot;,&quot;url&quot;:&quot;http://www.google.fr&quot;,&quot;test&quot;:&quot;&quot;,&quot;test3&quot;:&quot;&quot;}" />
             </div>
         </div>
 
         <div class="row">
 
             <form class="form-horizontal">
-                <ugo-dynamic-form selector="#reference"></ugo-dynamic-form>
+                <ugo-dynamic-form selector="#reference" config='{"capacity_milliliter":{"type":"number","mandatory":true,"label":"Capacité (Mililitres)"},"test":{"type":"text","mandatory":false,"label":"Test"},"url":{"type":"text","mandatory":true,"label":"Adresse Web"},"test3":{"type":"checkbox","mandatory":false,"label":"Test 3"}}'></ugo-dynamic-form>
             </form>
 
         </div>

@@ -24,7 +24,7 @@
             </div>
         </template>
 
-        <div data-role="add" hidden$="[[addAction]]">
+        <div data-role="add" hidden$="[[!addAction]]">
             <chosen-decorator width="200">
                 <select id="fieldType">
                     <template id="selectOption" is="dom-repeat" items="{{selectOptions}}" as="option" index-as="id">
@@ -48,6 +48,17 @@
                 type: String
             },
 
+            /**
+             * Optionnal
+             */
+            config: {
+                type: Object,
+                value: {}
+            },
+
+            /**
+             * Optionnal
+             */
             classes: {
                 type: Object,
                 value: {
@@ -62,6 +73,9 @@
                 }
             },
 
+            /**
+             * Optionnal
+             */
             texts: {
                 type: Object,
                 value: {
@@ -121,12 +135,14 @@
          *
          */
         ready: function() {
-            this.element = document.querySelector(this.selector);
-            if (this.element.value != '') {
-                this.data = JSON.parse(this.element.value);
-                this._setAddAction(this.data.config == undefined);
+            this.input = document.querySelector(this.selector);
+            if (this.input.value != '') {
+                this.data = JSON.parse(this.input.value);
             }
 
+            console.log(this.data, this.config);
+
+            this._setAddAction(this._hasConfig());
             this._buildFields();
         },
 
@@ -155,7 +171,6 @@
             var key = this.$.fieldType.value,
                 type = this._getConfig('type', key)
             ;
-
 
             var newField = {
                 name: key,
@@ -191,12 +206,8 @@
                     }
                 }.bind(this));
 
-                if (this.data.config != undefined) {
-                    data.config = this.data.config;
-                }
-
                 this.data = data;
-                this.element.value = JSON.stringify(data);
+                this.input.value = JSON.stringify(data);
             }
         },
 
@@ -211,7 +222,7 @@
 
             //display preset data
             for (key in this.data) {
-                if (this.data.hasOwnProperty(key) && key !== 'config') {
+                if (this.data.hasOwnProperty(key)) {
                     rendered.push(key);
                     type = this._getConfig('type', key);
                     fields.push({
@@ -226,11 +237,11 @@
             }
 
             //display mandatory field with no preset data
-            if (this.data.config != undefined) {
-                for (key in this.data.config) {
+            if (this._hasConfig()) {
+                for (key in this.config) {console.log(key, rendered.indexOf(key) == -1);
                     if  (
-                        this.data.config.hasOwnProperty(key)
-                        && this.data.config[key].mandatory
+                        this.config.hasOwnProperty(key)
+                        && this.config[key].mandatory
                         && rendered.indexOf(key) == -1
                     ) {
                         rendered.push(key);
@@ -256,9 +267,9 @@
          */
         _buildSelectOptions: function() {
             var options = [], key;
-            if (this.data.config != undefined) {
-                for (key in this.data.config) {
-                    if (this.data.config.hasOwnProperty(key) && !this._inField(key)) {
+            if (this._hasConfig()) {
+                for (key in this.config) {
+                    if (this.config.hasOwnProperty(key) && !this._inField(key)) {
                         options.push({
                             value: key,
                             label: this._getConfig('label', key)
@@ -271,18 +282,23 @@
         },
 
         /**
+         * Check if config is setted
+         *
+         * @return {Boolean}
+         */
+        _hasConfig: function() {
+            return Object.keys(this.config).length > 0;
+        },
+
+        /**
          * Get config
          * @param {String} type
          * @param {String} key
          * @private
          */
         _getConfig: function(type, key) {
-            if (
-                this.data.config != undefined
-                && this.data.config[key] != undefined
-                && this.data.config[key][type] != undefined
-            ) {
-                return this.data.config[key][type];
+            if (this._hasConfig() && this.config[key] != undefined && this.config[key][type] != undefined) {
+                return this.config[key][type];
             }
 
             var defaultValue = null;
@@ -290,8 +306,8 @@
                 case 'type':
                     defaultValue = 'text';
                     break;
-                case 'mandatory': //if not config specified then it's not mandatory
-                    defaultValue = this.data.config == undefined;
+                case 'mandatory': //if no config field is mandatory
+                    defaultValue = !this._hasConfig();
                     break;
                 case 'label':
                     defaultValue = key;

@@ -7,6 +7,7 @@
 
     <!-- Import dependencies -->
     <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <script src="../../jquery/dist/jquery.min.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
 
     <link rel="import" href="../../polymer/polymer.html">
@@ -15,7 +16,7 @@
 
 <body>
 
-<input type="text" id="reference" class="form-control" value="{&quot;url&quot;:&quot;http://www.google.fr&quot;,&quot;test&quot;:&quot;&quot;,&quot;config&quot;:{&quot;capacity_milliliter&quot;:{&quot;type&quot;:&quot;number&quot;,&quot;mandatory&quot;:true,&quot;label&quot;:&quot;Capacité (Mililitres)&quot;},&quot;test&quot;:{&quot;type&quot;:&quot;text&quot;,&quot;mandatory&quot;:false,&quot;label&quot;:&quot;Test&quot;},&quot;url&quot;:{&quot;type&quot;:&quot;text&quot;,&quot;mandatory&quot;:true,&quot;label&quot;:&quot;Adresse Web&quot;},&quot;test3&quot;:{&quot;type&quot;:&quot;checkbox&quot;,&quot;mandatory&quot;:false,&quot;label&quot;:&quot;Test 3&quot;}}}" />
+<input type="text" id="reference" style="width: 100%; display: block" value="{&quot;url&quot;:&quot;http://www.google.fr&quot;,&quot;test&quot;:&quot;&quot;,&quot;config&quot;:{&quot;capacity_milliliter&quot;:{&quot;type&quot;:&quot;number&quot;,&quot;mandatory&quot;:true,&quot;label&quot;:&quot;Capacité (Mililitres)&quot;},&quot;test&quot;:{&quot;type&quot;:&quot;text&quot;,&quot;mandatory&quot;:false,&quot;label&quot;:&quot;Test&quot;},&quot;url&quot;:{&quot;type&quot;:&quot;text&quot;,&quot;mandatory&quot;:true,&quot;label&quot;:&quot;Adresse Web&quot;},&quot;test3&quot;:{&quot;type&quot;:&quot;checkbox&quot;,&quot;mandatory&quot;:false,&quot;label&quot;:&quot;Test 3&quot;}}}" />
 
 <ugo-dynamic-form id="webcompo" selector="#reference"></ugo-dynamic-form>
 
@@ -30,10 +31,12 @@
             var elements = Polymer.dom(el.root).querySelectorAll('input');
             //console.log(elements);
             assert.equal(3, elements.length);
+            assert.equal(3, el.fields.length);
         });
 
         test('buildOptions', function() {
-            
+            assert.equal(4, Object.keys(el.data.config).length);
+            assert.equal(el.selectOptions.length, Object.keys(el.data.config).length - el.fields.length);
         });
 
         test('remove field', function(done) {
@@ -41,8 +44,8 @@
             el.removeField({target: button});
             setTimeout(function() {
                 var elements = Polymer.dom(el.root).querySelectorAll('input');
-                //console.log(elements);
                 assert.equal(2, elements.length);
+                assert.equal(2, el.fields.length);
             }, 50);
 
             var newButton = button.cloneNode(true);
@@ -50,17 +53,48 @@
             el.removeField({target: newButton});
             setTimeout(function() {
                 var elements = Polymer.dom(el.root).querySelectorAll('input');
-                //console.log(elements);
                 assert.equal(2, elements.length);
+                assert.equal(2, el.fields.length);
                 done();
             }, 50);
         });
 
-        test('add field', function() {
-
+        test('add field', function(done) {
+            jQuery(el.$.fieldType).val('test3');
+            jQuery(el.$.fieldType).trigger('chosen:updated');
+            el.addField();
+            setTimeout(function() {
+                var elements = Polymer.dom(el.root).querySelectorAll('input');
+                assert.equal(3, elements.length);
+                assert.equal(3, el.fields.length);
+                done();
+            }, 50);
         });
 
+        var _triggerEvent = function(element, eventName) {
+            var event; // The custom event that will be created
+            if (document.createEvent) {
+                event = document.createEvent("HTMLEvents");
+                event.initEvent(eventName, true, true);
+            } else {
+                event = document.createEventObject();
+                event.eventType = eventName;
+            }
+            event.eventName = eventName;
+            if (document.createEvent) {
+                element.dispatchEvent(event);
+            } else {
+                element.fireEvent("on" + event.eventType, event);
+            }
+        };
 
+        test('fetchData', function() {
+            var element = Polymer.dom(el.root).querySelector('input#test3');
+            assert.isFalse(el.data['test3']);
+            element.checked = true;
+            _triggerEvent(element, 'change');
+            assert.isTrue(el.data['test3']);
+        });
     });
 </script>
 

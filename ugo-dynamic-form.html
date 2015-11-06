@@ -4,15 +4,21 @@
 <dom-module id="ugo-dynamic-form">
     <template>
         <template id="fieldsContainer" is="dom-repeat" items="{{ fields }}" index-as="id">
-            <div class$="[[ classes.container ]]">
+            <div data-role="container" class$="[[ classes.container ]]">
                 <label for$="[[ item.name ]]" class$="[[ classes.label ]]">[[item.label]]</label>
                 <div class$="[[ classes.inputContainer ]]">
-                    <input type$="[[ item.type ]]" class$="[[ classes.input ]]" id$="[[ item.name ]]" value="{{ item.value }}" />
-
-                    <template is="dom-if" if="{{ !item.mandatory }}">
-                        <span class$="[[ classes.removeContainer ]]">
-                            <button type="button" data-id$="[[ item.name ]]" on-tap="removeField" class$="[[ classes.remove ]]">{{ texts.remove }}</button>
-                        </span>
+                    <template is="dom-if" if="{{item.mandatory}}">
+                        <input type$="[[ item.type ]]" class$="[[ inputClassSelector(item) ]]" id$="[[ item.name ]]" value="{{ item.value }}" />
+                    </template>
+                    <template is="dom-if" if="{{!item.mandatory}}">
+                        <div class$="[[classes.inputRemoveContainer]]">
+                            <input type$="[[ item.type ]]" class$="[[ inputClassSelector(item) ]]" id$="[[ item.name ]]" value="{{ item.value }}" />
+                            <span class$="[[ removeContainerClassSelector(item) ]]">
+                                <button type="button" data-id$="[[ item.name ]]" on-tap="removeField" class$="[[ classes.remove ]]">
+                                    {{ texts.remove }}
+                                </button>
+                            </span>
+                        </div>
                     </template>
                 </div>
             </div>
@@ -46,6 +52,8 @@
                     label: 'col-md-2 control-label',
                     inputContainer: 'col-md-10',
                     input: 'form-control',
+                    inputRemoveContainer: 'input-group',
+                    removeContainer: 'input-group-btn',
                     remove: 'btn btn-default btn-danger',
                     add: 'btn btn-default btn-success'
                 }
@@ -93,6 +101,11 @@
         },
 
         /**
+         * @type {Boolean}
+         */
+        _fieldSetted: false,
+
+        /**
          *
          */
         ready: function() {
@@ -116,6 +129,7 @@
             }
 
             this._buildSelectOptions();
+            this.fetchData();
         },
 
 
@@ -123,35 +137,50 @@
          * Add a field to the form
          */
         addField: function() {
-            var key = this.$.fieldType.value;
+            var key = this.$.fieldType.value,
+                type = this._getConfig('type', key)
+            ;
+
 
             var newField = {
                 name: key,
+                type: type,
                 label: this._getConfig('label', key),
-                value: null,
-                type: this._getConfig('type', key),
+                value: this._getFormValue(key, type),
+                selected: this._isSelected(key, type),
                 mandatory: this._getConfig('mandatory', key)
             };
 
             this.push('fields', newField);
             this._buildSelectOptions();
+            this.fetchData();
         },
 
         /**
          * Fetch Data from the displayed fields
          */
         fetchData: function() {
-            var children = Polymer.dom(this.root).querySelectorAll('.'+this.classes.container);
+            var children = Polymer.dom(this.root).querySelectorAll('div[data-role=container] input');
+            //true means that the rendering is finished
+            if (this.fields.length === children.length) {
+                var data = {};
+                [].forEach.call(children, function (field) {
+                    var fieldData = this._getFieldByName(field.id);
+                    switch (fieldData.type) {
+                        case 'checkbox':
+                            data[field.id] = field.checked;
+                            break;
+                        default:
+                            data[field.id] = field.value;
+                            break;
+                    }
+                }.bind(this));
 
-            var data = {};
-            [].forEach.call(children, function(element) {
-                var field = Polymer.dom(element).querySelector('input');
-                data[field.id] = field.value;
-            });
+                data.config = this.data.config;
 
-            data.config = this.data.config;
-
-            this.element.value = JSON.stringify(data);
+                this.data = data;
+                this.element.value = JSON.stringify(data);
+            }
         },
 
         /**
@@ -159,6 +188,7 @@
          */
         _buildFields: function () {
             var key,
+                type,
                 fields = [],
                 rendered = [];
 
@@ -166,11 +196,13 @@
             for (key in this.data) {
                 if (this.data.hasOwnProperty(key) && key !== 'config') {
                     rendered.push(key);
+                    type = this._getConfig('type', key);
                     fields.push({
                         name: key,
+                        type: type,
                         label: this._getConfig('label', key),
-                        value: this.data[key],
-                        type: this._getConfig('type', key),
+                        value: this._getFormValue(key, type),
+                        selected: this._isSelected(key, type),
                         mandatory: this._getConfig('mandatory', key)
                     });
                 }
@@ -254,7 +286,85 @@
 
         /**
          * @param {String} name
+         * @param {String} fieldType
+         * @return {*}
+         *
+         * @private
+         */
+        _getFormValue: function(name, fieldType) {
+            var value = '';
+
+            switch (fieldType) {
+                case 'checkbox':
+                    value = 1;
+                    break;
+                default:
+                    if (this.data[name] != undefined) {
+                        value = this.data[name];
+                    }
+                    break;
+            }
+
+            return value;
+        },
+
+        /**
+         * @param {String} name
+         * @param {String} fieldType
+         * @return {*}
+         *
+         * @private
+         */
+        _isSelected: function(name, fieldType) {
+            var value = false;
+
+            switch (fieldType) {
+                case 'checkbox':
+                    if (this.data[name] != undefined) {
+                        value = this.data[name];
+                    }
+                    break;
+            }
+
+            return value;
+        },
+
+        /**
+         * Used in template
+         * @param {Object} item
+         * @return {String}
+         */
+        inputClassSelector: function (item) {
+            var className = this.classes.input;
+            switch (item.type) {
+                case 'checkbox':
+                        className = '';
+                    break;
+            }
+
+            return className;
+        },
+
+        /**
+         * Used in template
+         * @param {Object} item
+         * @return {String}
+         */
+        removeContainerClassSelector: function (item) {
+            var className = this.classes.removeContainer;
+            switch (item.type) {
+                case 'checkbox':
+                    className = '';
+                    break;
+            }
+
+            return className;
+        },
+
+        /**
+         * @param {String} name
          * @return {Boolean}
+         * @private
          */
         _inField: function(name) {
             var key;
@@ -266,6 +376,22 @@
             }
 
             return false;
+        },
+
+        /**
+         * @return {Object|null}
+         * @private
+         */
+        _getFieldByName: function(name) {
+            var key;
+            /** @var {Array} this.fields */
+            for (key in this.fields) {
+                if (this.fields.hasOwnProperty(key) && this.fields[key].name === name) {
+                    return this.fields[key];
+                }
+            }
+
+            return null;
         }
     });
 </script>

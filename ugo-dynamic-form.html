@@ -23,14 +23,17 @@
                 </div>
             </div>
         </template>
-        <chosen-decorator width="200">
-            <select id="fieldType">
-                <template id="selectOption" is="dom-repeat" items="{{selectOptions}}" as="option" index-as="id">
-                    <option value="[[option.value]]">[[option.label]]</option>
-                </template>
-            </select>
-        </chosen-decorator>
-        <button type="button" class$="[[ classes.add ]]" on-tap="addField">{{texts.add}}</button>
+
+        <div data-role="add" hidden$="[[addAction]]">
+            <chosen-decorator width="200">
+                <select id="fieldType">
+                    <template id="selectOption" is="dom-repeat" items="{{selectOptions}}" as="option" index-as="id">
+                        <option value="[[option.value]]">[[option.label]]</option>
+                    </template>
+                </select>
+            </chosen-decorator>
+            <button type="button" class$="[[ classes.add ]]" on-tap="addField">{{texts.add}}</button>
+        </div>
     </template>
 </dom-module>
 <script>
@@ -91,6 +94,15 @@
             data: {
                 type: Object,
                 value: {}
+            },
+
+            /**
+             * Internal
+             */
+            addAction: {
+                type: Boolean,
+                value: true,
+                readOnly: true
             }
         },
 
@@ -110,7 +122,10 @@
          */
         ready: function() {
             this.element = document.querySelector(this.selector);
-            this.data = JSON.parse(this.element.value);
+            if (this.element.value != '') {
+                this.data = JSON.parse(this.element.value);
+                this._setAddAction(this.data.config == undefined);
+            }
 
             this._buildFields();
         },
@@ -176,7 +191,9 @@
                     }
                 }.bind(this));
 
-                data.config = this.data.config;
+                if (this.data.config != undefined) {
+                    data.config = this.data.config;
+                }
 
                 this.data = data;
                 this.element.value = JSON.stringify(data);

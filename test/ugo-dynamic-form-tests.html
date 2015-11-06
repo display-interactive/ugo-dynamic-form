@@ -20,6 +20,11 @@
 
 <ugo-dynamic-form id="webcompo" selector="#reference"></ugo-dynamic-form>
 
+<br/><br/><br/><br/><br/>
+
+<input type="text" id="ref2" style="width: 100%; display: block" value="" />
+<ugo-dynamic-form id="webcompo2" selector="#ref2"></ugo-dynamic-form>
+
 <script>
     suite('<ugo-dynamic-form>', function() {
         var el = document.getElementById('webcompo');
@@ -94,6 +99,14 @@
             element.checked = true;
             _triggerEvent(element, 'change');
             assert.isTrue(el.data['test3']);
+        });
+
+
+        test('no conf', function() {
+            var add = Polymer.dom(el.root).querySelector('div[data-role=add]');
+            assert.isFalse(add.hasAttribute('hidden'));
+            add = Polymer.dom(document.getElementById('webcompo2').root).querySelector('div[data-role=add]');
+            assert.isTrue(add.hasAttribute('hidden'));
         });
     });
 </script>

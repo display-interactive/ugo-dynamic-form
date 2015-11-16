@@ -1,0 +1,173 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../chosen-decorator/chosen-decorator.html">
+
+<dom-module id="ugo-field">
+    <template>
+        <template is="dom-if" if="[[ isInput ]]">
+            <input type$="[[ type ]]" class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" value="[[ value ]]" pattern="[[ pattern ]]" required$="[[ required ]]"/>
+        </template>
+        <template is="dom-if" if="[[ isCheckbox ]]">
+            <input type$="[[ type ]]" class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" value="1" checked$="{{ value }}"/>
+        </template>
+        <template is="dom-if" if="[[ isTextarea ]]">
+            <textarea class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" required$="[[ required ]]">[[ value ]]</textarea>
+        </template>
+        <template is="dom-if" if="[[ isSelect ]]">
+            <chosen-decorator width="[[ width ]]">
+                <select class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" required$="[[ required ]]">
+                    <template is="dom-repeat" items="{{ options }}" as="option">
+                        <option value="[[ getOptionValue(option) ]]" selected$="[[ isSetted(option) ]]">[[ getOptionLabel(option) ]]</option>
+                    </template>
+                </select>
+            </chosen-decorator>
+        </template>
+        <template is="dom-if" if="[[ isRadio ]]">
+            <template is="dom-repeat" items="{{ options }}" as="option">
+                <label class$="[[ className ]]">
+                    <input type="radio" id$="[[ getRadioId(option) ]]" name="[[ name ]]" value="[[ getOptionValue(option) ]]" checked$="[[ isSetted(option) ]]">
+                    [[ getOptionLabel(option) ]]
+                </label>
+            </template>
+        </template>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: 'ugo-field',
+
+        properties: {
+            /**
+             * Required
+             *
+             * Field type (text, number, textarea, checkbox)
+             */
+            type: {
+                type: String
+            },
+
+            /**
+             * field name
+             */
+            name: {
+                type: String
+            },
+
+            /**
+             * field class
+             */
+            className: {
+                type: String,
+                value: null
+            },
+
+            /**
+             * field id
+             */
+            ident: {
+                type: String,
+                value: null
+            },
+
+            /**
+             * Field value
+             */
+            value: {
+                type: String,
+                value: null
+            },
+
+            /**
+             * Field validation
+             */
+            required: {
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * Field validation
+             */
+            pattern: {
+                type: String,
+                value: null
+            },
+
+            /**
+             * Used for select options
+             */
+            options: {
+                type: Array,
+                value: []
+            },
+
+            /**
+             * Used for select size
+             */
+            width: {
+                type: String
+            }
+        },
+
+        /**
+         * User to switch in template with type
+         */
+        isCheckbox: false,
+        isRadio: false,
+        isTextarea: false,
+        isSelect: false,
+        isInput: false,
+
+
+        ready: function() {
+            //set boolean value
+            this.isTextarea = this.type === 'textarea';
+            this.isCheckbox = this.type === 'checkbox';
+            this.isRadio = this.type === 'radio';
+            this.isSelect = this.type === 'select';
+            this.isInput = !this.isTextarea && !this.isSelect && !this.isCheckbox && !this.isRadio;
+
+            if (this.isCheckbox) {
+                this.value = (1 == this.value) || ('true' == this.value);
+            }
+        },
+
+        /**
+         * @param {*} option
+         * @returns {String}
+         */
+        getOptionValue: function(option) {
+            if (option.value != undefined) return option.value;
+
+            return option;
+        },
+
+        /**
+         * @param {*} option
+         * @returns {String}
+         */
+        getOptionLabel: function(option) {
+            if (option.label != undefined) return option.label;
+
+            return this.getOptionValue(option);
+        },
+
+        /**
+         * Used to set selected attribute on option tag
+         *
+         * @param option
+         * @returns {boolean}
+         */
+        isSetted: function(option) {
+            return this.value == this.getOptionValue(option);
+        },
+
+        /**
+         * Get input radio id
+         *
+         * @return {String}
+         */
+        getRadioId: function(option) {
+            return this.ident + '_' + this.getOptionValue(option);
+        }
+    });
+</script>

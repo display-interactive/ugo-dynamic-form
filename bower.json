@@ -13,9 +13,10 @@
         "test",
         "tests"
     ],
-    "keywords": ["Polymer", "web-components", "form", "dynmaic"],
+    "keywords": ["Polymer", "web-components", "form", "dynamic"],
     "dependencies": {
-        "polymer": "Polymer/polymer#1.2.*"
+        "polymer": "Polymer/polymer#1.2.*",
+        "chosen-decorator": "git@github.com:display-interactive/chosen-decorator.git"
     },
     "devDependencies": {
         "web-component-tester": "*",

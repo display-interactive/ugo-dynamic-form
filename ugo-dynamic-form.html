@@ -1,5 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../chosen-decorator/chosen-decorator.html">
+<link rel="import" href="ugo-field.html">
 
 <dom-module id="ugo-dynamic-form">
     <template>
@@ -8,11 +8,24 @@
                 <label for$="[[ item.name ]]" class$="[[ classes.label ]]">[[item.label]]</label>
                 <div class$="[[ classes.inputContainer ]]">
                     <template is="dom-if" if="{{item.mandatory}}">
-                        <input type$="[[ item.type ]]" class$="[[ inputClassSelector(item) ]]" id$="[[ item.name ]]" value="{{ item.value }}" />
+                        <ugo-field
+                            type="[[ item.type ]]"
+                            class-name="[[ inputClassSelector(item) ]]"
+                            ident="[[ item.name ]]"
+                            value="{{ item.value }}"
+                            required$="{{item.mandatory}}"
+                            pattern$="[[ item.pattern ]]"
+                        ></ugo-field>
                     </template>
                     <template is="dom-if" if="{{!item.mandatory}}">
                         <div class$="[[classes.inputRemoveContainer]]">
-                            <input type$="[[ item.type ]]" class$="[[ inputClassSelector(item) ]]" id$="[[ item.name ]]" value="{{ item.value }}" />
+                            <ugo-field
+                                type="[[ item.type ]]"
+                                class-name="[[ inputClassSelector(item) ]]"
+                                ident="[[ item.name ]]"
+                                value="{{ item.value }}"
+                                required$="{{item.mandatory}}"
+                            ></ugo-field>
                             <span class$="[[ removeContainerClassSelector(item) ]]">
                                 <button type="button" data-id$="[[ item.name ]]" on-tap="removeField" class$="[[ classes.remove ]]">
                                     {{ texts.remove }}
@@ -238,7 +251,7 @@
 
             //display mandatory field with no preset data
             if (this._hasConfig()) {
-                for (key in this.config) {console.log(key, rendered.indexOf(key) == -1);
+                for (key in this.config) {//console.log(key, rendered.indexOf(key) == -1);
                     if  (
                         this.config.hasOwnProperty(key)
                         && this.config[key].mandatory

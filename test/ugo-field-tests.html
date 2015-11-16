@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>ugo dynamic form</title>
+
+    <!-- Import dependencies -->
+    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <script src="../../jquery/dist/jquery.min.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="../ugo-field.html">
+</head>
+
+<body>
+
+<ugo-field type="text" id="t1c" ident="t1" name="t1" class-name="field" value="123" required="required" pattern="\d+"></ugo-field>
+<br>
+<ugo-field type="textarea" id="t2c" ident="t2" name="t2" class-name="field" value="textarea" pattern="\d+"></ugo-field>
+<br>
+<ugo-field type="checkbox" id="t3c" ident="t3" name="t3" class-name="field" value="1"></ugo-field>
+<br>
+<ugo-field type="select" id="t4c" ident="t4" name="t4" class-name="field" width="200" required value="2" options='[{"value": null, "label": "empty"}, {"value": 1, "label": "test1"}, {"value": 2}, {"value": 3, "label": "test3"}, 4]'></ugo-field>
+<br>
+<ugo-field type="radio" id="t5c" ident="t5" name="t5" value="2" options='[{"value": 1, "label": "test1"}, {"value": 2}, {"value": 3, "label": "test3"}, 4]'></ugo-field>
+
+<script>
+    suite('<ugo-field>', function() {
+        test('test input text', function() {
+            assert.isNotNull(document.getElementById('t1c'));
+
+            var input = document.getElementById('t1');
+            assert.isNotNull(input);
+            assert.equal('text', input.getAttribute('type'));
+            assert.equal('t1', input.id);
+            assert.equal('t1', input.getAttribute('name'));
+            assert.equal('123', input.value);
+            assert.isTrue(input.hasAttribute('required'));
+            assert.equal('', input.getAttribute('required'));
+            assert.isTrue(input.required);
+            assert.equal('\\d+', input.getAttribute('pattern'));
+        });
+
+        test('test textarea', function() {
+            assert.isNotNull(document.getElementById('t2c'));
+
+            var textarea = document.getElementById('t2');
+
+            assert.isNotNull(textarea);
+            assert.isNull(textarea.getAttribute('type'));
+            assert.equal('t2', textarea.id);
+            assert.equal('t2', textarea.getAttribute('name'));
+            assert.equal('textarea', textarea.value);
+            assert.isFalse(textarea.hasAttribute('required'));
+            assert.isFalse(textarea.required);
+            assert.isFalse(textarea.hasAttribute('pattern'));
+        });
+
+        test('test checkbox', function() {
+            assert.isNotNull(document.getElementById('t3c'));
+
+            var checkbox = document.getElementById('t3');
+            assert.isNotNull(checkbox);
+            assert.equal('checkbox', checkbox.getAttribute('type'));
+            assert.equal('t3', checkbox.id);
+            assert.equal('t3', checkbox.getAttribute('name'));
+            assert.isTrue(checkbox.checked);
+            assert.isFalse(checkbox.hasAttribute('required'));
+            assert.isFalse(checkbox.required);
+            assert.isFalse(checkbox.hasAttribute('pattern'));
+        });
+
+        test('test select', function() {
+            assert.isNotNull(document.getElementById('t4c'));
+
+            var select = document.getElementById('t4');
+            assert.isNotNull(select);
+            assert.isFalse(select.hasAttribute('type'));
+            assert.equal('t4', select.id);
+            assert.equal('t4', select.getAttribute('name'));
+            assert.isTrue(select.hasAttribute('required'));
+            assert.isTrue(select.required);
+            assert.isFalse(select.hasAttribute('pattern'));
+        });
+
+        test('test radio', function() {
+            assert.isNotNull(document.getElementById('t5c'));
+
+            var radios = Polymer.dom(document.getElementById('t5c').root).querySelectorAll('input[type=radio]');
+
+            assert.equal(4, radios.length);
+            [].forEach.call(radios, function (radio) {
+                assert.equal('radio', radio.getAttribute('type'));
+                assert.equal('t5', radio.getAttribute('name'));
+                assert.isFalse(radio.hasAttribute('required'));
+                assert.isFalse(radio.required);
+                assert.isFalse(radio.hasAttribute('pattern'));
+                assert.equal('t5_'+radio.value, radio.id);
+            })
+
+        });
+    });
+</script>
+
+</body>
+</html>

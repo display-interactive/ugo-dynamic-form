@@ -30,15 +30,19 @@
             </div>
         </template>
 
-        <div data-role="add" hidden$="[[!addAction]]">
-            <chosen-decorator width="200">
-                <select id="fieldType">
-                    <template id="selectOption" is="dom-repeat" items="{{selectOptions}}" as="option" index-as="id">
-                        <option value="[[option.value]]">[[option.label]]</option>
-                    </template>
-                </select>
-            </chosen-decorator>
-            <button type="button" class$="[[ classes.add ]]" on-tap="addField">{{texts.add}}</button>
+        <div class="row" data-role="add" hidden$="[[!addAction]]">
+            <div class$="[[ classes.selectContainer ]]">
+                <chosen-decorator width="200">
+                    <select id="fieldType">
+                        <template id="selectOption" is="dom-repeat" items="{{selectOptions}}" as="option" index-as="id">
+                            <option value="[[option.value]]">[[option.label]]</option>
+                        </template>
+                    </select>
+                </chosen-decorator>
+            </div>
+            <div class$="[[ classes.addContainer ]]">
+                <button type="button" class$="[[ classes.add ]]" on-tap="addField">{{texts.add}}</button>
+            </div>
         </div>
     </template>
 </dom-module>
@@ -59,7 +63,9 @@
             checkbox: '',
             radio: '',
             remove: 'btn btn-default btn-danger pull-right',
-            add: 'btn btn-default btn-success'
+            selectContainer: 'col-md-10',
+            addContainer: 'col-md-2',
+            add: 'btn btn-default btn-success pull-right'
         },
 
         properties: {

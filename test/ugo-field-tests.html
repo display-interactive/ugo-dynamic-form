@@ -29,22 +29,24 @@
 <script>
     suite('<ugo-field>', function() {
         test('test input text', function() {
-            assert.isNotNull(document.getElementById('t1c'));
+            var ugoField = document.getElementById('t1c');
+            assert.isNotNull(ugoField);
 
             var input = document.getElementById('t1');
             assert.isNotNull(input);
             assert.equal('text', input.getAttribute('type'));
             assert.equal('t1', input.id);
             assert.equal('t1', input.getAttribute('name'));
-            assert.equal('123', input.value);
             assert.isTrue(input.hasAttribute('required'));
             assert.equal('', input.getAttribute('required'));
             assert.isTrue(input.required);
             assert.equal('\\d+', input.getAttribute('pattern'));
+            assert.equal('123', ugoField.getFormattedValue())
         });
 
         test('test textarea', function() {
-            assert.isNotNull(document.getElementById('t2c'));
+            var ugoField = document.getElementById('t2c');
+            assert.isNotNull(ugoField);
 
             var textarea = document.getElementById('t2');
 
@@ -52,28 +54,32 @@
             assert.isNull(textarea.getAttribute('type'));
             assert.equal('t2', textarea.id);
             assert.equal('t2', textarea.getAttribute('name'));
-            assert.equal('textarea', textarea.value);
             assert.isFalse(textarea.hasAttribute('required'));
             assert.isFalse(textarea.required);
             assert.isFalse(textarea.hasAttribute('pattern'));
+
+            assert.equal('textarea', ugoField.getFormattedValue());
         });
 
         test('test checkbox', function() {
-            assert.isNotNull(document.getElementById('t3c'));
+            var ugoField = document.getElementById('t3c');
+            assert.isNotNull(ugoField);
 
             var checkbox = document.getElementById('t3');
             assert.isNotNull(checkbox);
             assert.equal('checkbox', checkbox.getAttribute('type'));
             assert.equal('t3', checkbox.id);
             assert.equal('t3', checkbox.getAttribute('name'));
-            assert.isTrue(checkbox.checked);
             assert.isFalse(checkbox.hasAttribute('required'));
             assert.isFalse(checkbox.required);
             assert.isFalse(checkbox.hasAttribute('pattern'));
+
+            assert.isTrue(ugoField.getFormattedValue());
         });
 
         test('test select', function() {
-            assert.isNotNull(document.getElementById('t4c'));
+            var ugoField = document.getElementById('t4c');
+            assert.isNotNull(ugoField);
 
             var select = document.getElementById('t4');
             assert.isNotNull(select);
@@ -83,10 +89,12 @@
             assert.isTrue(select.hasAttribute('required'));
             assert.isTrue(select.required);
             assert.isFalse(select.hasAttribute('pattern'));
+            assert.equal('2', ugoField.getFormattedValue());
         });
 
         test('test radio', function() {
-            assert.isNotNull(document.getElementById('t5c'));
+            var ugoField = document.getElementById('t5c');
+            assert.isNotNull(ugoField);
 
             var radios = Polymer.dom(document.getElementById('t5c').root).querySelectorAll('input[type=radio]');
 
@@ -100,6 +108,7 @@
                 assert.equal('t5_'+radio.value, radio.id);
             })
 
+            assert.equal('2', ugoField.getFormattedValue());
         });
     });
 </script>

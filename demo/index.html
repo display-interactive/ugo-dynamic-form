@@ -27,7 +27,7 @@
         <div class="row">
 
             <form class="form-horizontal">
-                <ugo-dynamic-form selector="#reference" config='{"capacity_milliliter":{"type":"number","mandatory":true,"label":"Capacité (Mililitres)"},"test":{"type":"text","mandatory":false,"label":"Test"},"url":{"type":"text","mandatory":true,"label":"Adresse Web"},"test3":{"type":"checkbox","mandatory":false,"label":"Test 3"}}'></ugo-dynamic-form>
+                <ugo-dynamic-form selector="#reference" config='{"capacity_milliliter":{"type":"number","mandatory":true,"label":"Capacité (Mililitres)"},"test":{"type":"textarea","mandatory":false,"label":"Test"},"url":{"type":"text","mandatory":false,"label":"Adresse Web","pattern":"https?://.+"},"test3":{"type":"checkbox","mandatory":false,"label":"Test 3"},"type":{"type":"select","mandatory":true,"label":"Type","width":"200","options":[{"label":"Test 1","value":1},{"label":"Test 2","value":2},{"label":"Test 3","value":3},{"label":"Test 4","value":1}]},"type2":{"type":"radio","mandatory":false,"label":"Type 2","width":"200","options":[{"value":1},{"label":"Test 2","value":2},3,{"value":5}]}}'></ugo-dynamic-form>
             </form>
 
         </div>

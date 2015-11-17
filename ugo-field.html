@@ -16,16 +16,16 @@
             <chosen-decorator width="[[ width ]]">
                 <select class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" required$="[[ required ]]">
                     <template is="dom-repeat" items="{{ options }}" as="option">
-                        <option value="[[ getOptionValue(option) ]]" selected$="[[ isSetted(option) ]]">[[ getOptionLabel(option) ]]</option>
+                        <option value="[[ _getOptionValue(option) ]]" selected$="[[ _isSetted(option) ]]">[[ _getOptionLabel(option) ]]</option>
                     </template>
                 </select>
             </chosen-decorator>
         </template>
         <template is="dom-if" if="[[ isRadio ]]">
             <template is="dom-repeat" items="{{ options }}" as="option">
-                <label class$="[[ className ]]">
-                    <input type="radio" id$="[[ getRadioId(option) ]]" name="[[ name ]]" value="[[ getOptionValue(option) ]]" checked$="[[ isSetted(option) ]]">
-                    [[ getOptionLabel(option) ]]
+                <label>
+                    <input type="radio" class$="[[ className ]]" id$="[[ _getRadioId(option) ]]" name="[[ name ]]" value="[[ _getOptionValue(option) ]]" checked$="[[ _isSetted(option) ]]">
+                    [[ _getOptionLabel(option) ]]
                 </label>
             </template>
         </template>
@@ -117,7 +117,9 @@
         isSelect: false,
         isInput: false,
 
-
+        /**
+         * Set boolean values for template
+         */
         ready: function() {
             //set boolean value
             this.isTextarea = this.type === 'textarea';
@@ -132,10 +134,69 @@
         },
 
         /**
+         * Get Formatted Value
+         * @return {*}
+         */
+        getFormattedValue: function() {
+            var value;
+
+            switch (this.type) {
+                case 'checkbox':
+                    value = this._getValueField().checked;
+                    break;
+                case 'select':
+                    var select = this._getValueField();
+                    value = select.options[select.selectedIndex].value;
+                    break;
+                default:
+                    value = this._getValueField().value;
+                    break;
+            }
+
+            return value;
+        },
+
+        isRendered: function() {
+            return null !== this._getValueField();
+        },
+
+        /**
+         * Get field that contains the value
+         *
+         * @return {HTMLElement}
+         */
+        _getValueField: function () {
+            var field = null;
+            switch (this.type) {
+                case 'checkbox':
+                    field = this.querySelector('input');
+                    break;
+                case 'radio':
+                    field = this.querySelector('input[type=radio]:checked');
+                    break;
+                case 'select':
+                    var chosen = this.querySelector('chosen-decorator');
+                    if (null !== chosen && chosen.querySelectorAll('select > option').length > 0) {
+                        field = chosen.querySelector('select');
+                    }
+                    break;
+                case 'textarea':
+                    field = this.querySelector('textarea');
+                    break;
+                default:
+                    field = this.querySelector('input');
+                    break;
+            }
+
+            return field;
+        },
+
+        /**
          * @param {*} option
          * @returns {String}
+         * @private
          */
-        getOptionValue: function(option) {
+        _getOptionValue: function(option) {
             if (option.value != undefined) return option.value;
 
             return option;
@@ -144,11 +205,12 @@
         /**
          * @param {*} option
          * @returns {String}
+         * @private
          */
-        getOptionLabel: function(option) {
+        _getOptionLabel: function(option) {
             if (option.label != undefined) return option.label;
 
-            return this.getOptionValue(option);
+            return this._getOptionValue(option);
         },
 
         /**
@@ -156,18 +218,20 @@
          *
          * @param option
          * @returns {boolean}
+         * @private
          */
-        isSetted: function(option) {
-            return this.value == this.getOptionValue(option);
+        _isSetted: function(option) {
+            return this.value == this._getOptionValue(option);
         },
 
         /**
          * Get input radio id
          *
          * @return {String}
+         * @private
          */
-        getRadioId: function(option) {
-            return this.ident + '_' + this.getOptionValue(option);
+        _getRadioId: function(option) {
+            return this.ident + '_' + this._getOptionValue(option);
         }
     });
 </script>

@@ -6,34 +6,27 @@
         <template id="fieldsContainer" is="dom-repeat" items="{{ fields }}" index-as="id">
             <div data-role="container" class$="[[ classes.container ]]">
                 <label for$="[[ item.name ]]" class$="[[ classes.label ]]">[[item.label]]</label>
-                <div class$="[[ classes.inputContainer ]]">
-                    <template is="dom-if" if="{{item.mandatory}}">
-                        <ugo-field
+                <div class$="[[ getInputContainerClass(item) ]]">
+                    <ugo-field
                             type="[[ item.type ]]"
-                            class-name="[[ inputClassSelector(item) ]]"
+                            class-name="[[ getInputClassSelector(item) ]]"
                             ident="[[ item.name ]]"
+                            name="[[ item.name ]]"
                             value="{{ item.value }}"
-                            required$="{{item.mandatory}}"
+                            required$="[[ item.required ]]"
                             pattern$="[[ item.pattern ]]"
-                        ></ugo-field>
-                    </template>
-                    <template is="dom-if" if="{{!item.mandatory}}">
-                        <div class$="[[classes.inputRemoveContainer]]">
-                            <ugo-field
-                                type="[[ item.type ]]"
-                                class-name="[[ inputClassSelector(item) ]]"
-                                ident="[[ item.name ]]"
-                                value="{{ item.value }}"
-                                required$="{{item.mandatory}}"
-                            ></ugo-field>
-                            <span class$="[[ removeContainerClassSelector(item) ]]">
-                                <button type="button" data-id$="[[ item.name ]]" on-tap="removeField" class$="[[ classes.remove ]]">
-                                    {{ texts.remove }}
-                                </button>
-                            </span>
-                        </div>
-                    </template>
+                            width$="[[ item.width ]]"
+                            options$="[[ item.options ]]"
+                    ></ugo-field>
                 </div>
+
+                <template is="dom-if" if="{{!item.mandatory}}">
+                    <div class$="[[ classes.removeContainer ]]">
+                        <button type="button" data-id$="[[ item.name ]]" on-tap="removeField" class$="[[ classes.remove ]]">
+                            {{ texts.remove }}
+                        </button>
+                    </div>
+                </template>
             </div>
         </template>
 
@@ -52,6 +45,22 @@
 <script>
     Polymer({
         is: 'ugo-dynamic-form',
+
+        /**
+         * Default classes (bootstrap)
+         */
+        defaultClasses: {
+            container: 'form-group',
+            label: 'col-md-2 control-label',
+            inputMandatoryContainer: 'col-md-10',
+            inputContainer: 'col-md-9',
+            removeContainer: 'col-md-1',
+            input: 'form-control',
+            checkbox: '',
+            radio: '',
+            remove: 'btn btn-default btn-danger pull-right',
+            add: 'btn btn-default btn-success'
+        },
 
         properties: {
             /**
@@ -74,16 +83,7 @@
              */
             classes: {
                 type: Object,
-                value: {
-                    container: 'form-group',
-                    label: 'col-md-2 control-label',
-                    inputContainer: 'col-md-10',
-                    input: 'form-control',
-                    inputRemoveContainer: 'input-group',
-                    removeContainer: 'input-group-btn',
-                    remove: 'btn btn-default btn-danger',
-                    add: 'btn btn-default btn-success'
-                }
+                value: {}
             },
 
             /**
@@ -155,6 +155,8 @@
                 this.data = JSON.parse(this.input.value);
             }
 
+            this.classes = this._mergeObjects(this.defaultClasses, this.classes);
+
             this._setAddAction(this._hasConfig());
             this._buildFields();
         },
@@ -189,9 +191,12 @@
                 name: key,
                 type: type,
                 label: this._getConfig('label', key),
-                value: this._getFormValue(key, type),
-                selected: this._isSelected(key, type),
-                mandatory: this._getConfig('mandatory', key)
+                value: this._getFormValue(key),
+                mandatory: this._getConfig('mandatory', key),
+                required: this._getConfig('required', key),
+                pattern: this._getConfig('pattern', key),
+                options: this._getConfig('options', key),
+                width: this._getConfig('width', key)
             };
 
             this.push('fields', newField);
@@ -203,25 +208,47 @@
          * Fetch Data from the displayed fields
          */
         fetchData: function() {
-            var children = Polymer.dom(this.root).querySelectorAll('div[data-role=container] input');
+            var children = this._getUgoFields();
             //true means that the rendering is finished
-            if (this.fields.length === children.length) {
+            if (this._isRendered()) {
                 var data = {};
-                [].forEach.call(children, function (field) {
-                    var fieldData = this._getFieldByName(field.id);
-                    switch (fieldData.type) {
-                        case 'checkbox':
-                            data[field.id] = field.checked;
-                            break;
-                        default:
-                            data[field.id] = field.value;
-                            break;
-                    }
+                [].forEach.call(children, function (ugoField) {
+                    data[ugoField.ident] = ugoField.getFormattedValue();
                 }.bind(this));
 
                 this.data = data;
                 this.input.value = JSON.stringify(data);
             }
+        },
+
+        /**
+         * Get ugoFields in form
+         *
+         * @return {NodeList}
+         * @private
+         */
+        _getUgoFields: function() {
+            return Polymer.dom(this.root).querySelectorAll('div[data-role=container] ugo-field');
+        },
+
+
+        /**
+         * Check if
+         *
+         * @return {Boolean}
+         * @private
+         */
+        _isRendered: function() {
+            var isRendered = true,
+                children = this._getUgoFields();
+
+            [].forEach.call(children, function (ugoField) {
+                if (!ugoField.isRendered()) {
+                    isRendered = false;
+                }
+            }.bind(this));
+
+            return isRendered && children.length === this.fields.length;
         },
 
         /**
@@ -242,16 +269,19 @@
                         name: key,
                         type: type,
                         label: this._getConfig('label', key),
-                        value: this._getFormValue(key, type),
-                        selected: this._isSelected(key, type),
-                        mandatory: this._getConfig('mandatory', key)
+                        value: this._getFormValue(key),
+                        mandatory: this._getConfig('mandatory', key),
+                        required: this._getConfig('required', key),
+                        pattern: this._getConfig('pattern', key),
+                        width: this._getConfig('width', key),
+                        options: this._getConfig('options', key)
                     });
                 }
             }
 
             //display mandatory field with no preset data
             if (this._hasConfig()) {
-                for (key in this.config) {//console.log(key, rendered.indexOf(key) == -1);
+                for (key in this.config) {
                     if  (
                         this.config.hasOwnProperty(key)
                         && this.config[key].mandatory
@@ -261,9 +291,13 @@
                         fields.push({
                             name: key,
                             label: this._getConfig('label', key),
-                            value: "",
+                            value: null,
                             type: this._getConfig('type', key),
-                            mandatory: true
+                            mandatory: true,
+                            required: this._getConfig('required', key),
+                            pattern: this._getConfig('pattern', key),
+                            width: this._getConfig('width', key),
+                            options: this._getConfig('options', key)
                         })
                     }
                 }
@@ -323,6 +357,18 @@
                 case 'mandatory': //if no config field is mandatory
                     defaultValue = !this._hasConfig();
                     break;
+                case 'required': //if no config field is mandatory
+                    defaultValue = false;
+                    break;
+                case 'pattern': //if no config field is mandatory
+                    defaultValue = null;
+                    break;
+                case 'options': //if no config field is mandatory
+                    defaultValue = [];
+                    break;
+                case 'width': //if no config field is mandatory
+                    defaultValue = null;
+                    break;
                 case 'label':
                     defaultValue = key;
                     break;
@@ -338,39 +384,11 @@
          *
          * @private
          */
-        _getFormValue: function(name, fieldType) {
-            var value = '';
+        _getFormValue: function(name) {
+            var value = null;
 
-            switch (fieldType) {
-                case 'checkbox':
-                    value = 1;
-                    break;
-                default:
-                    if (this.data[name] != undefined) {
-                        value = this.data[name];
-                    }
-                    break;
-            }
-
-            return value;
-        },
-
-        /**
-         * @param {String} name
-         * @param {String} fieldType
-         * @return {*}
-         *
-         * @private
-         */
-        _isSelected: function(name, fieldType) {
-            var value = false;
-
-            switch (fieldType) {
-                case 'checkbox':
-                    if (this.data[name] != undefined) {
-                        value = this.data[name];
-                    }
-                    break;
+            if (this.data[name] != undefined) {
+                value = this.data[name];
             }
 
             return value;
@@ -381,11 +399,14 @@
          * @param {Object} item
          * @return {String}
          */
-        inputClassSelector: function (item) {
+        getInputClassSelector: function (item) {
             var className = this.classes.input;
             switch (item.type) {
                 case 'checkbox':
-                        className = '';
+                    className = this.classes.checkbox;
+                    break;
+                case 'radio':
+                    className = this.classes.radio;
                     break;
             }
 
@@ -397,15 +418,8 @@
          * @param {Object} item
          * @return {String}
          */
-        removeContainerClassSelector: function (item) {
-            var className = this.classes.removeContainer;
-            switch (item.type) {
-                case 'checkbox':
-                    className = '';
-                    break;
-            }
-
-            return className;
+        getInputContainerClass: function(item) {
+            return item.mandatory ? this.classes.inputMandatoryContainer : this.classes.inputContainer;
         },
 
         /**
@@ -439,6 +453,22 @@
             }
 
             return null;
+        },
+
+        /**
+         * Merge 2 objets with just one level of depth
+         *
+         * @param obj1
+         * @param obj2
+         * @returns {{}}
+         * @private
+         */
+        _mergeObjects: function (obj1, obj2) {
+            var attr, result = {};
+            for (attr in obj1) result[attr] = obj1[attr];
+            for (attr in obj2) result[attr] = obj2[attr];
+
+            return result;
         }
     });
 </script>

@@ -175,7 +175,8 @@
          * @private
          */
         _removeField: function(event) {
-            var id = event.target.getAttribute('data-id');
+            var button = event.target.tagName === 'SPAN' ? event.target.parentNode : event.target;
+            var id = button.getAttribute('data-id');
 
             for(var index = 0; index < this.fields.length; index++) {
                 if (this.fields[index].name == id && !this.fields[index].mandatory) {

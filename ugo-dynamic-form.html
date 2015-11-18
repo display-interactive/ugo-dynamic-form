@@ -6,13 +6,13 @@
         <template id="fieldsContainer" is="dom-repeat" items="{{ fields }}" index-as="id">
             <div data-role="container" class$="[[ classes.container ]]">
                 <label for$="[[ item.name ]]" class$="[[ classes.label ]]">[[item.label]]</label>
-                <div class$="[[ getInputContainerClass(item) ]]">
+                <div class$="[[ _getInputContainerClass(item) ]]">
                     <ugo-field
-                            type="[[ item.type ]]"
-                            class-name="[[ getInputClassSelector(item) ]]"
-                            ident="[[ item.name ]]"
-                            name="[[ item.name ]]"
-                            value="{{ item.value }}"
+                            type$="[[ item.type ]]"
+                            class-name$="[[ _getInputClassSelector(item) ]]"
+                            ident$="[[ item.name ]]"
+                            name$="[[ item.name ]]"
+                            value$="{{ item.value }}"
                             required$="[[ item.required ]]"
                             pattern$="[[ item.pattern ]]"
                             width$="[[ item.width ]]"
@@ -22,7 +22,7 @@
 
                 <template is="dom-if" if="{{!item.mandatory}}">
                     <div class$="[[ classes.removeContainer ]]">
-                        <button type="button" data-id$="[[ item.name ]]" on-tap="removeField" class$="[[ classes.remove ]]">
+                        <button type="button" data-id$="[[ item.name ]]" on-tap="_removeField" class$="[[ classes.remove ]]">
                             {{ texts.remove }}
                         </button>
                     </div>
@@ -33,7 +33,7 @@
         <div class="row" data-role="add" hidden$="[[!addAction]]">
             <div class$="[[ classes.selectContainer ]]">
                 <chosen-decorator width="200">
-                    <select id="fieldType">
+                    <select id="fieldType" data-placeholder$="[[ texts.placeholder ]]">
                         <template id="selectOption" is="dom-repeat" items="{{selectOptions}}" as="option" index-as="id">
                             <option value="[[option.value]]">[[option.label]]</option>
                         </template>
@@ -41,7 +41,7 @@
                 </chosen-decorator>
             </div>
             <div class$="[[ classes.addContainer ]]">
-                <button type="button" class$="[[ classes.add ]]" on-tap="addField">{{texts.add}}</button>
+                <button type="button" class$="[[ classes.add ]]" on-tap="_addField">{{texts.add}}</button>
             </div>
         </div>
     </template>
@@ -53,7 +53,7 @@
         /**
          * Default classes (bootstrap)
          */
-        defaultClasses: {
+        _defaultClasses: {
             container: 'form-group',
             label: 'col-md-2 control-label',
             inputMandatoryContainer: 'col-md-10',
@@ -66,6 +66,15 @@
             selectContainer: 'col-md-10',
             addContainer: 'col-md-2',
             add: 'btn btn-default btn-success pull-right'
+        },
+
+        /**
+         * Default classes (bootstrap)
+         */
+        _defaultTexts: {
+            add: '+',
+            remove: '-',
+            placeholder: 'Select a field type to add'
         },
 
         properties: {
@@ -97,10 +106,7 @@
              */
             texts: {
                 type: Object,
-                value: {
-                    add: '+',
-                    remove: '-'
-                }
+                value: {}
             },
 
             /**
@@ -140,20 +146,14 @@
         },
 
         listeners: {
-            'dom-change': 'fetchData',
-            'change': 'fetchData',
-            'keyup': 'fetchData'
+            'change': '_fetchData',
+            'keyup': '_fetchData',
+            'blur': '_fetchData',
+            'tap': '_fetchData'
         },
 
         /**
-         * @type {Boolean}
-         */
-        _fieldSetted: false,
-
-        /**
-         * @todo object merge for "classes" et "texts"
-         * @todo add required and pattern to field
-         * @todo add select in "type" choice config
+         *
          */
         ready: function() {
             this.input = document.querySelector(this.selector);
@@ -161,7 +161,8 @@
                 this.data = JSON.parse(this.input.value);
             }
 
-            this.classes = this._mergeObjects(this.defaultClasses, this.classes);
+            this.classes = this._mergeObjects(this._defaultClasses, this.classes);
+            this.texts = this._mergeObjects(this._defaultTexts, this.texts);
 
             this._setAddAction(this._hasConfig());
             this._buildFields();
@@ -169,31 +170,42 @@
 
         /**
          * Remove a field from the form
+         * @private
          */
-        removeField: function(event) {
+        _removeField: function(event) {
             var id = event.target.getAttribute('data-id');
 
             for(var index = 0; index < this.fields.length; index++) {
                 if (this.fields[index].name == id && !this.fields[index].mandatory) {
                     this.splice('fields', index, 1);
-                    break;
+                    this.push('selectOptions', {
+                        value: id,
+                        label: this._getConfig('label', id)
+                    });
+
+                    this._setAddAction(this.selectOptions.length > 1);
+                    this.async(this._fetchData, 1);
+
+                    return;
                 }
             }
 
-            this._buildSelectOptions();
-            this.fetchData();
+
         },
 
 
         /**
          * Add a field to the form
+         * @private
          */
-        addField: function() {
+        _addField: function() {
             var key = this.$.fieldType.value,
                 type = this._getConfig('type', key)
             ;
 
-            var newField = {
+            if ('' === key) return;
+
+            this.push('fields', {
                 name: key,
                 type: type,
                 label: this._getConfig('label', key),
@@ -203,28 +215,28 @@
                 pattern: this._getConfig('pattern', key),
                 options: this._getConfig('options', key),
                 width: this._getConfig('width', key)
-            };
+            });
 
-            this.push('fields', newField);
-            this._buildSelectOptions();
-            this.fetchData();
+            this._removeOptionWithName(key);
+            this._setAddAction(this.selectOptions.length > 1);
+
+            this.async(this._fetchData, 1);
         },
 
         /**
          * Fetch Data from the displayed fields
+         * @private
          */
-        fetchData: function() {
+        _fetchData: function() {
             var children = this._getUgoFields();
-            //true means that the rendering is finished
-            if (this._isRendered()) {
-                var data = {};
-                [].forEach.call(children, function (ugoField) {
-                    data[ugoField.ident] = ugoField.getFormattedValue();
-                }.bind(this));
 
-                this.data = data;
-                this.input.value = JSON.stringify(data);
-            }
+            var data = {};
+            [].forEach.call(children, function (ugoField) {
+                data[ugoField.ident] = ugoField.getFormattedValue();
+            }.bind(this));
+
+            this.data = data;
+            this.input.value = JSON.stringify(data);
         },
 
         /**
@@ -234,31 +246,12 @@
          * @private
          */
         _getUgoFields: function() {
-            return Polymer.dom(this.root).querySelectorAll('div[data-role=container] ugo-field');
-        },
-
-
-        /**
-         * Check if
-         *
-         * @return {Boolean}
-         * @private
-         */
-        _isRendered: function() {
-            var isRendered = true,
-                children = this._getUgoFields();
-
-            [].forEach.call(children, function (ugoField) {
-                if (!ugoField.isRendered()) {
-                    isRendered = false;
-                }
-            }.bind(this));
-
-            return isRendered && children.length === this.fields.length;
+            return Polymer.dom(this.root).querySelectorAll('ugo-field');
         },
 
         /**
          * Build fields array for template
+         * @private
          */
         _buildFields: function () {
             var key,
@@ -311,15 +304,20 @@
 
             this._setFields(fields);
             this._buildSelectOptions();
+            this.async(this._fetchData, 1);
         },
 
         /**
          * build select options
          *
          * depends from fields
+         * @private
          */
         _buildSelectOptions: function() {
-            var options = [], key;
+            var options = [{value: '', label: ''}],
+                key
+            ;
+
             if (this._hasConfig()) {
                 for (key in this.config) {
                     if (this.config.hasOwnProperty(key) && !this._inField(key)) {
@@ -332,13 +330,14 @@
             }
 
             this._setSelectOptions(options);
-            this._setAddAction(options.length > 0);
+            this._setAddAction(options.length > 1);
         },
 
         /**
          * Check if config is setted
          *
          * @return {Boolean}
+         * @private
          */
         _hasConfig: function() {
             return Object.keys(this.config).length > 0;
@@ -387,7 +386,6 @@
          * @param {String} name
          * @param {String} fieldType
          * @return {*}
-         *
          * @private
          */
         _getFormValue: function(name) {
@@ -401,11 +399,12 @@
         },
 
         /**
-         * Used in template
+         * Used in template (called in template)
          * @param {Object} item
          * @return {String}
+         * @private
          */
-        getInputClassSelector: function (item) {
+        _getInputClassSelector: function (item) {
             var className = this.classes.input;
             switch (item.type) {
                 case 'checkbox':
@@ -423,9 +422,27 @@
          * Used in template
          * @param {Object} item
          * @return {String}
+         * @private
          */
-        getInputContainerClass: function(item) {
+        _getInputContainerClass: function(item) {
             return item.mandatory ? this.classes.inputMandatoryContainer : this.classes.inputContainer;
+        },
+
+        /**
+         * Remove an option with his name
+         */
+        _removeOptionWithName: function(name) {
+            var key,
+                selectOptions = this.selectOptions.slice()
+            ;
+
+            for (key in this.selectOptions) {
+                if (this.selectOptions.hasOwnProperty(key) && this.selectOptions[key].value === name) {
+                    this.splice('selectOptions', key, 1);
+                    return;
+                }
+            }
+
         },
 
         /**

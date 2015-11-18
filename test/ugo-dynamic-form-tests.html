@@ -40,12 +40,12 @@
 
         test('buildOptions', function() {
             assert.equal(6, Object.keys(el.config).length);
-            assert.equal(el.selectOptions.length, Object.keys(el.config).length - el.fields.length);
+            assert.equal(el.selectOptions.length-1, Object.keys(el.config).length - el.fields.length);
         });
 
         test('remove field', function(done) {
             var button = Polymer.dom(el.root).querySelector('button[data-id=test]');
-            el.removeField({target: button});
+            el._removeField({target: button});
             setTimeout(function() {
                 var elements = Polymer.dom(el.root).querySelectorAll('ugo-field');
                 assert.equal(3, elements.length);
@@ -54,7 +54,7 @@
 
             var newButton = button.cloneNode(true);
             newButton.setAttribute('data-id', 'capacity_milliliter');
-            el.removeField({target: newButton});
+            el._removeField({target: newButton});
             setTimeout(function() {
                 var elements = Polymer.dom(el.root).querySelectorAll('ugo-field');
                 assert.equal(3, elements.length);
@@ -66,13 +66,13 @@
         test('add field', function(done) {
             jQuery(el.$.fieldType).val('type2');
             jQuery(el.$.fieldType).trigger('chosen:updated');
-            el.addField();
+            el._addField();
             setTimeout(function() {
                 var elements = Polymer.dom(el.root).querySelectorAll('ugo-field');
                 assert.equal(4, elements.length);
                 assert.equal(4, el.fields.length);
                 done();
-            }, 50);
+            }, 2);
         });
 
         var _triggerEvent = function(element, eventName) {
@@ -92,21 +92,27 @@
             }
         };
 
-        /*test('fetchData', function() {
-            var element = Polymer.dom(el.root).querySelector('input#test3');
-            assert.isFalse(el.data['test3']);
-            element.checked = true;
-            _triggerEvent(element, 'change');
-            assert.isTrue(el.data['test3']);
+        test('fetchData', function() {
+            jQuery(el.$.fieldType).val('test3');
+            jQuery(el.$.fieldType).trigger('chosen:updated');
+            el._addField();
+
+            setTimeout(function() {
+                var element = el.querySelector('#test3');
+                assert.isFalse(el.data['test3']);
+                element.checked = true;
+                _triggerEvent(element, 'change');
+                assert.isTrue(el.data['test3']);
+            }, 100);
         });
 
 
-        /est('no conf', function() {
+        test('no conf', function() {
             var add = Polymer.dom(el.root).querySelector('div[data-role=add]');
             assert.isFalse(add.hasAttribute('hidden'));
             add = Polymer.dom(document.getElementById('webcompo2').root).querySelector('div[data-role=add]');
             assert.isTrue(add.hasAttribute('hidden'));
-        });*/
+        });
     });
 </script>
 

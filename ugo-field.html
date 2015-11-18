@@ -138,7 +138,7 @@
          * @return {*}
          */
         getFormattedValue: function() {
-            var value;
+            var value = null;
 
             switch (this.type) {
                 case 'checkbox':
@@ -149,7 +149,10 @@
                     value = select.options[select.selectedIndex].value;
                     break;
                 default:
-                    value = this._getValueField().value;
+                    var field = this._getValueField();
+                    if (field) {
+                        value = field.value;
+                    }
                     break;
             }
 

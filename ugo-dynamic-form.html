@@ -23,7 +23,7 @@
                 <template is="dom-if" if="{{!item.mandatory}}">
                     <div class$="[[ classes.removeContainer ]]">
                         <button type="button" data-id$="[[ item.name ]]" on-tap="_removeField" class$="[[ classes.remove ]]">
-                            {{ texts.remove }}
+                            <span class$="[[ classes.removeSpan ]]"></span>{{ texts.remove }}
                         </button>
                     </div>
                 </template>
@@ -41,7 +41,7 @@
                 </chosen-decorator>
             </div>
             <div class$="[[ classes.addContainer ]]">
-                <button type="button" class$="[[ classes.add ]]" on-tap="_addField">{{texts.add}}</button>
+                <button type="button" class$="[[ classes.add ]]" on-tap="_addField"><span class$="[[ classes.addSpan ]]"></span>{{texts.add}}</button>
             </div>
         </div>
     </template>
@@ -63,17 +63,19 @@
             checkbox: '',
             radio: '',
             remove: 'btn btn-default btn-danger pull-right',
+            removeSpan: 'glyphicon glyphicon-minus',
             selectContainer: 'col-md-10',
             addContainer: 'col-md-2',
-            add: 'btn btn-default btn-success pull-right'
+            add: 'btn btn-default btn-success pull-right',
+            addSpan: 'glyphicon glyphicon-plus'
         },
 
         /**
          * Default classes (bootstrap)
          */
         _defaultTexts: {
-            add: '+',
-            remove: '-',
+            add: ' Add',
+            remove: ' Del',
             placeholder: 'Select a field type to add'
         },
 

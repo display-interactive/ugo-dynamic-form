@@ -76,7 +76,8 @@
         _defaultTexts: {
             add: ' Add',
             remove: ' Del',
-            placeholder: 'Select a field type to add'
+            placeholder: 'Select a field type to add',
+            confirm: "Are you sure you want to that field ?"
         },
 
         properties: {
@@ -180,14 +181,16 @@
 
             for(var index = 0; index < this.fields.length; index++) {
                 if (this.fields[index].name == id && !this.fields[index].mandatory) {
-                    this.splice('fields', index, 1);
-                    this.push('selectOptions', {
-                        value: id,
-                        label: this._getConfig('label', id)
-                    });
+                    if (this.data[id] == '' || confirm(this.texts.confirm)) {
+                        this.splice('fields', index, 1);
+                        this.push('selectOptions', {
+                            value: id,
+                            label: this._getConfig('label', id)
+                        });
 
-                    this._setAddAction(this.selectOptions.length > 1);
-                    this.async(this._fetchData, 1);
+                        this._setAddAction(this.selectOptions.length > 1);
+                        this.async(this._fetchData, 1);
+                    }
 
                     return;
                 }

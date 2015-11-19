@@ -16,6 +16,8 @@
                             required$="[[ item.required ]]"
                             pattern$="[[ item.pattern ]]"
                             width$="[[ item.width ]]"
+                            rows$="[[ item.cols ]]"
+                            cols$="[[ item.rows ]]"
                             options$="[[ item.options ]]"
                     ></ugo-field>
                 </div>
@@ -220,7 +222,9 @@
                 required: this._getConfig('required', key),
                 pattern: this._getConfig('pattern', key),
                 options: this._getConfig('options', key),
-                width: this._getConfig('width', key)
+                width: this._getConfig('width', key),
+                cols: this._getConfig('cols', key),
+                rows: this._getConfig('rows', key)
             });
 
             this._removeOptionWithName(key);
@@ -279,6 +283,8 @@
                         required: this._getConfig('required', key),
                         pattern: this._getConfig('pattern', key),
                         width: this._getConfig('width', key),
+                        cols: this._getConfig('cols', key),
+                        rows: this._getConfig('rows', key),
                         options: this._getConfig('options', key)
                     });
                 }
@@ -301,7 +307,8 @@
                             mandatory: true,
                             required: this._getConfig('required', key),
                             pattern: this._getConfig('pattern', key),
-                            width: this._getConfig('width', key),
+                            cols: this._getConfig('cols', key),
+                            rows: this._getConfig('rows', key),
                             options: this._getConfig('options', key)
                         })
                     }
@@ -390,7 +397,6 @@
 
         /**
          * @param {String} name
-         * @param {String} fieldType
          * @return {*}
          * @private
          */

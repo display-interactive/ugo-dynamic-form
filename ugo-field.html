@@ -10,7 +10,7 @@
             <input type$="[[ type ]]" class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" value="1" checked$="{{ value }}"/>
         </template>
         <template is="dom-if" if="[[ isTextarea ]]">
-            <textarea class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" required$="[[ required ]]">[[ value ]]</textarea>
+            <textarea class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" required$="[[ required ]]" rows$="[[ rows ]]" cols$="[[ cols ]]">[[ value ]]</textarea>
         </template>
         <template is="dom-if" if="[[ isSelect ]]">
             <chosen-decorator width="[[ width ]]">
@@ -105,6 +105,23 @@
              */
             width: {
                 type: String
+            },
+
+            /**
+             * Textarea property
+             */
+            rows: {
+                type: Number,
+                value: 5
+            },
+
+
+            /**
+             * Textarea property
+             */
+            cols: {
+                type: Number,
+                value: 20
             }
         },
 

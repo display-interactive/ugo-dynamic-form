@@ -4,7 +4,7 @@
 <dom-module id="ugo-field">
     <template>
         <template is="dom-if" if="[[ isInput ]]">
-            <input type$="[[ type ]]" class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" value="[[ value ]]" pattern="[[ pattern ]]" required$="[[ required ]]"/>
+            <input type$="[[ type ]]" class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" value="[[ value ]]" pattern$="[[ pattern ]]" required$="[[ required ]]"/>
         </template>
         <template is="dom-if" if="[[ isCheckbox ]]">
             <input type$="[[ type ]]" class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" value="1" checked$="{{ value }}"/>
@@ -13,7 +13,7 @@
             <textarea class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" required$="[[ required ]]" rows$="[[ rows ]]" cols$="[[ cols ]]">[[ value ]]</textarea>
         </template>
         <template is="dom-if" if="[[ isSelect ]]">
-            <chosen-decorator width="[[ width ]]">
+            <chosen-decorator width$="[[ width ]]">
                 <select class$="[[ className ]]" name$="[[ name ]]" id$="[[ ident ]]" required$="[[ required ]]">
                     <template is="dom-repeat" items="{{ options }}" as="option">
                         <option value="[[ _getOptionValue(option) ]]" selected$="[[ _isSetted(option) ]]">[[ _getOptionLabel(option) ]]</option>
@@ -24,7 +24,7 @@
         <template is="dom-if" if="[[ isRadio ]]">
             <template is="dom-repeat" items="{{ options }}" as="option">
                 <label>
-                    <input type="radio" class$="[[ className ]]" id$="[[ _getRadioId(option) ]]" name="[[ name ]]" value="[[ _getOptionValue(option) ]]" checked$="[[ _isSetted(option) ]]">
+                    <input type="radio" class$="[[ className ]]" id$="[[ _getRadioId(option) ]]" name$="[[ name ]]" value="[[ _getOptionValue(option) ]]" checked$="[[ _isSetted(option) ]]">
                     [[ _getOptionLabel(option) ]]
                 </label>
             </template>

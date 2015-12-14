@@ -160,7 +160,7 @@
         /**
          *
          */
-        ready: function() {
+        attached: function() {
             this.input = document.querySelector(this.selector);
             if (this.input.value != '') {
                 this.data = JSON.parse(this.input.value);

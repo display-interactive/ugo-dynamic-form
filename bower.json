@@ -1,0 +1,24 @@
+{
+    "name": "ugo-dynamic-form",
+    "version": "0.2",
+    "authors": [
+        "Florian Roy"
+    ],
+    "description": "Polymer Element to create dynamic forms",
+    "main": "element/*",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "keywords": ["Polymer", "web-components", "html", "form"],
+    "dependencies": {
+        "polymer": "Polymer/polymer#^1.2.*",
+        "chosen-decorator": "git@github.com:display-interactive/chosen-decorator.git"
+    },
+    "devDependencies": {
+        "web-component-tester": "*"
+    }
+}

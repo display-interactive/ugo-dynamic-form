@@ -5,7 +5,7 @@
         "Florian Roy"
     ],
     "description": "Polymer Element to create dynamic forms",
-    "main": "element/*",
+    "main": "ugo-dynamic-form.html",
     "ignore": [
         "**/.*",
         "node_modules",
